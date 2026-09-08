@@ -78,6 +78,32 @@
             margin-bottom: 10px;
         }
 
+        /* Estilo para el segundo botón que aparece al final */
+        #btn-extra {
+            position: absolute;
+            bottom: 10%;
+            left: 15%;
+            background-color: #ffcc00;
+            color: #3e2723;
+            border: none;
+            padding: 12px 24px;
+            font-size: 15px;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1.5s ease, transform 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 20;
+            font-family: 'Georgia', serif;
+        }
+
+        #btn-extra:hover {
+            transform: scale(1.08);
+            background-color: #ffdb4d;
+        }
+
         @media (max-width: 768px) {
             #mensaje {
                 width: 84%;
@@ -86,12 +112,13 @@
             }
             #mensaje h2 { font-size: 17px; }
             #mensaje p { font-size: 12px; }
+            #btn-extra { left: 10%; bottom: 8%; font-size: 13px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Botón interactivo inicial con forma de girasol -->
+    <!-- Primer botón inicial -->
     <button id="btn-inicio" onclick="comenzarMagia()">
         <div class="girasol-btn"></div>
         <div class="texto-click">Click Aqui</div>
@@ -106,22 +133,23 @@
         <p>QUE ESTAS FLORES TE RECUERDEN LO ESPECIAL QUE ERES PARA MI.<br><strong>¡TE AMO!</strong></p>
     </div>
 
+    <!-- Segundo botón extra que aparece al terminar -->
+    <button id="btn-extra" onclick="lanzarMasFlores()">¡Haz clic para mas flores! 🌻</button>
+
     <script>
         const canvas = document.getElementById('canvas-animacion');
         const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
-        function comenzarMagia() {
-            // Ocultar el botón al hacer clic
-            document.getElementById('btn-inicio').style.display = 'none';
+        let xCentro = window.innerWidth < 768 ? canvas.width * 0.5 : canvas.width * 0.65;
+        let alturaTalloFinal = canvas.height * 0.38;
+        let sueloY = canvas.height - 100;
 
-            let sueloY = canvas.height - 100;
-            let xCentro = window.innerWidth < 768 ? canvas.width * 0.5 : canvas.width * 0.65;
-            let alturaTalloFinal = canvas.height * 0.38;
+        function comenzarMagia() {
+            document.getElementById('btn-inicio').style.display = 'none';
             let yActualTallo = sueloY;
 
-            // 1. Dibujar la línea del suelo y animar el crecimiento del tallo hacia arriba
             let animarTallo = setInterval(() => {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 
@@ -133,7 +161,7 @@
                 ctx.lineTo(canvas.width * 0.95, sueloY);
                 ctx.stroke();
 
-                // Tallo creciendo
+                // Tallo
                 ctx.strokeStyle = "#2e7d32";
                 ctx.lineWidth = 7;
                 ctx.beginPath();
@@ -143,7 +171,6 @@
 
                 yActualTallo -= 10;
 
-                // Cuando el tallo llega arriba, se detiene y empieza a dibujar el corazón
                 if (yActualTallo <= alturaTalloFinal) {
                     clearInterval(animarTallo);
                     dibujarCorazonProgresivo(xCentro, alturaTalloFinal);
@@ -153,18 +180,19 @@
 
         function dibujarCorazonProgresivo(cx, cy) {
             let i = 0;
-            let maxFlores = 130;
+            let maxFlores = 260; // ¡Muchísimas más flores para que quede lleno!
 
-            // 2. Dibujar los girasoles uno por uno formando el corazón poco a poco
             let animarFlores = setInterval(() => {
                 if (i >= maxFlores) {
                     clearInterval(animarFlores);
-                    // Mostrar el texto con fundido al terminar el corazón
+                    // Mostrar mensaje y el segundo botón
                     document.getElementById('mensaje').style.opacity = 1;
+                    let btnEx = document.getElementById('btn-extra');
+                    btnEx.style.opacity = 1;
+                    btnEx.style.pointerEvents = 'auto';
                     return;
                 }
 
-                // Fórmula matemática de la forma de corazón
                 let t = (i / maxFlores) * Math.PI * 2;
                 let x = 16 * Math.pow(Math.sin(t), 3);
                 let y = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
@@ -173,13 +201,22 @@
                 let posX = cx + x * escala;
                 let posY = (cy - 30) + y * escala;
 
-                pintarGirasolIndividual(posX, posY, 11);
+                pintarGirasolIndividual(posX, posY, 10);
                 i++;
-            }, 35);
+            }, 20);
+        }
+
+        // Función del segundo botón para llenar de más flores alrededor
+        function lanzarMasFlores() {
+            document.getElementById('btn-extra').style.display = 'none';
+            for (let j = 0; j < 80; j++) {
+                let rx = xCentro + (Math.random() - 0.5) * 350;
+                let ry = (alturaTalloFinal - 20) + (Math.random() - 0.5) * 250;
+                pintarGirasolIndividual(rx, ry, 9);
+            }
         }
 
         function pintarGirasolIndividual(x, y, radio) {
-            // Pétalos amarillos
             ctx.fillStyle = "#ffcc00";
             for (let p = 0; p < 8; p++) {
                 let angulo = (p * Math.PI) / 4;
@@ -187,7 +224,6 @@
                 ctx.arc(x + Math.cos(angulo) * (radio * 0.55), y + Math.sin(angulo) * (radio * 0.55), radio * 0.45, 0, Math.PI * 2);
                 ctx.fill();
             }
-            // Centro oscuro del girasol
             ctx.fillStyle = "#3e2723";
             ctx.beginPath();
             ctx.arc(x, y, radio * 0.42, 0, Math.PI * 2);
@@ -196,4 +232,3 @@
     </script>
 </body>
 </html>
-         
