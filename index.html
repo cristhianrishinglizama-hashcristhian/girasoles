@@ -1,1 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flores Amarillas</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f4f1ea;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Georgia', serif;
+        }
 
+        #btn-inicio {
+            background: none;
+            border: none;
+            cursor: pointer;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        #btn-inicio:hover {
+            transform: scale(1.1);
+        }
+
+        .girasol-btn {
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, #5a3e1b 30%, #ffcc00 31%);
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            margin: 0 auto;
+        }
+
+        .texto-click {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        #canvas-animacion {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        #mensaje {
+            position: absolute;
+            left: 10%;
+            top: 20%;
+            width: 40%;
+            opacity: 0;
+            transition: opacity 2s ease-in-out;
+            color: #2c2c2c;
+            line-height: 1.6;
+        }
+
+        #mensaje h2 {
+            font-size: 22px;
+            color: #d4a017;
+            margin-bottom: 15px;
+        }
+
+        #mensaje p {
+            font-size: 15px;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            #mensaje {
+                width: 80%;
+                left: 10%;
+                top: 10%;
+            }
+            #mensaje h2 { font-size: 18px; }
+            #mensaje p { font-size: 13px; }
+        }
+    </style>
+</head>
+<body>
+
+    <button id="btn-inicio" onclick="iniciarAnimacion()">
+        <div class="girasol-btn"></div>
+        <div class="texto-click">Click Aqui</div>
+    </button>
+
+    <canvas id="canvas-animacion"></canvas>
+
+    <div id="mensaje">
+        <h2>FELIZ DIA DE LAS FLORES AMARILLAS</h2>
+        <p><strong>CADA GIRASOL QUE VES AQUI ES UN LATIDO DE MI CORAZON.</strong></p>
+        <p>ASI COMO EL SOL ILUMINA LOS CAMPOS, TU ILUMINAS MI VIDA.</p>
+        <p>QUE ESTAS FLORES TE RECUERDEN LO ESPECIAL QUE ERES PARA MI.<br><strong>¡TE AMO!</strong></p>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas-animacion');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        function iniciarAnimacion() {
+            document.getElementById('btn-inicio').style.display = 'none';
+
+            let yTallo = canvas.height - 100;
+            let alturaFinalTallo = canvas.height * 0.4;
+            let xCentro = window.innerWidth < 768 ? canvas.width * 0.5 : canvas.width * 0.65;
+
+            let t = setInterval(() => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                ctx.strokeStyle = "#444";
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(canvas.width * 0.1, canvas.height - 100);
+                ctx.lineTo(canvas.width * 0.9, canvas.height - 100);
+                ctx.stroke();
+
+                ctx.strokeStyle = "#2e7d32";
+                ctx.lineWidth = 8;
+                ctx.beginPath();
+                ctx.moveTo(xCentro, canvas.height - 100);
+                ctx.lineTo(xCentro, yTallo);
+                ctx.stroke();
+
+                yTallo -= 8;
+
+                if (yTallo <= alturaFinalTallo) {
+                    clearInterval(t);
+                    dibujarCorazonGirasoles(xCentro, alturaFinalTallo);
+                }
+            }, 30);
+        }
+
+        function dibujarCorazonGirasoles(cx, cy) {
+            let n = 0;
+            let totalFlores = 120;
+
+            let intervaloFlores = setInterval(() => {
+                if (n >= totalFlores) {
+                    clearInterval(intervaloFlores);
+                    document.getElementById('mensaje').style.opacity = 1;
+                    return;
+                }
+
+                let tVal = (n / totalFlores) * Math.PI * 2;
+                let x = 16 * Math.pow(Math.sin(tVal), 3);
+                let y = -(13 * Math.cos(tVal) - 5 * Math.cos(2*tVal) - 2 * Math.cos(3*tVal) - Math.cos(4*tVal));
+
+                let escala = window.innerWidth < 768 ? 9 : 12;
+                let posX = cx + x * escala;
+                let posY = (cy - 40) + y * escala;
+
+                dibujarGirasol(posX, posY, 12);
+                n++;
+            }, 40);
+        }
+
+        function dibujarGirasol(x, y, radio) {
+            ctx.fillStyle = "#ffcc00";
+            for (let i = 0; i < 8; i++) {
+                let angulo = (i * Math.PI) / 4;
+                ctx.beginPath();
+                ctx.arc(x + Math.cos(angulo) * (radio*0.6), y + Math.sin(angulo) * (radio*0.6), radio * 0.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.fillStyle = "#3e2723";
+            ctx.beginPath();
+            ctx.arc(x, y, radio * 0.5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    </script>
+</body>
+</html>
